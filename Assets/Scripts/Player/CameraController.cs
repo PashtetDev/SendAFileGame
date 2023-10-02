@@ -26,11 +26,14 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        if (!PlayerController.instance.isLose)
+        if (PlayerController.instance != null)
         {
-            Vector3 camPosition = (Camera.main.ScreenToWorldPoint(Input.mousePosition) - player.transform.position) / 2;
-            camPosition.z = -10;
-            transform.position = player.transform.position + camPosition.normalized * radius;
+            if (!PlayerController.instance.isLose)
+            {
+                Vector3 camPosition = (Camera.main.ScreenToWorldPoint(Input.mousePosition) - player.transform.position) / 2;
+                camPosition.z = -10;
+                transform.position = player.transform.position + camPosition.normalized * radius;
+            }
         }
     }
 

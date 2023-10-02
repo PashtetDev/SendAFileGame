@@ -5,7 +5,7 @@ public class Worm : EnemyBasic
 {
     public SpriteRenderer sprite;
     [SerializeField]
-    private float damage;
+    private float touchDamage;
     public float reloadTime;
     private Coroutine reload = null;
     public float speed, followingDistance, detectedDistance;
@@ -66,7 +66,7 @@ public class Worm : EnemyBasic
             targetPosition = MapGenerator.instance.RandomPlace(followingDistance, transform.position);
         if (collision.transform.CompareTag("Player") && reload == null)
         {
-            collision.transform.GetComponent<PlayerController>().GetDamage(damage);
+            collision.transform.GetComponent<PlayerController>().GetDamage(touchDamage);
             reload = StartCoroutine(Reload());
         }
     }

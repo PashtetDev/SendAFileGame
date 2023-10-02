@@ -1,13 +1,13 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.U2D;
 
 public class USB : Worm
 {
-    [SerializeField]
-    private GameObject worm;
-    private float currentReloadTime;
-    private bool wait;
+    public GameObject worm;
+    [HideInInspector]
+    public float currentReloadTime;
+    [HideInInspector]
+    public bool wait;
 
     public override void Movement()
     {
@@ -16,7 +16,7 @@ public class USB : Worm
             StartCoroutine(WormSpawner());
     }
 
-    private IEnumerator WormSpawner()
+    public IEnumerator WormSpawner()
     {
         wait = true;
         currentReloadTime = reloadTime * Random.Range(0.75f, 1.5f);
@@ -24,6 +24,7 @@ public class USB : Worm
         GameObject newEnemy = Instantiate(worm, transform.position, Quaternion.identity);
         MapGenerator.instance.AddEnemy(newEnemy);
         yield return new WaitForSeconds(1f);
+        if (newEnemy != null)
         newEnemy.GetComponent<EnemyBasic>().Initialization();
         wait = false;
         while (currentReloadTime > 0)

@@ -22,21 +22,17 @@ public class Inventory
 
     public void Reset()
     {
+        level = 0;
         antivirus = false;
         cryptoDurability = false;
         optialFiber = false;
         https = false;
         archive = false;
-        publicNet = false; 
+        publicNet = false;
         exploit = false;
         weakPassword = false;
         damagedHDD = false;
         oldVersion = false;
-    }
-
-    public bool All()
-    {
-       return antivirus && cryptoDurability && optialFiber && https && archive && publicNet && exploit && weakPassword && damagedHDD && oldVersion;
     }
 }
 
@@ -79,6 +75,7 @@ public class PlayerController : MonoBehaviour
     public bool isLose;
     private Coroutine reload = null;
     private Coroutine fall = null;
+    [HideInInspector]
     public bool activated;
 
     public void Initialization()
@@ -99,16 +96,21 @@ public class PlayerController : MonoBehaviour
 
     private void OnLevelWasLoaded(int level)
     {
-        activated = false;
-        reload = null;
-        fall = null;
-        transform.position = Vector3.zero;
-        transform.localScale = Vector3.one;
-        transform.eulerAngles = Vector3.zero;
-        if (Camera.main.transform.parent != null)
-            if (Camera.main.transform.parent.TryGetComponent(out CameraController cameraController))
-                cameraController.Initialization();
-        rb = GetComponent<Rigidbody2D>();
+        if (SceneManager.GetActiveScene().name == "Menu")
+            Destroy(gameObject);
+        else
+        {
+            activated = false;
+            reload = null;
+            fall = null;
+            transform.position = Vector3.zero;
+            transform.localScale = Vector3.one;
+            transform.eulerAngles = Vector3.zero;
+            if (Camera.main.transform.parent != null)
+                if (Camera.main.transform.parent.TryGetComponent(out CameraController cameraController))
+                    cameraController.Initialization();
+            rb = GetComponent<Rigidbody2D>();
+        }
     }
 
     private void SetInstance()
@@ -124,6 +126,10 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene("Menu");
+        }
         if (!isLose && activated)
         {
             if (Input.GetMouseButton(0) && SceneManager.GetActiveScene().name == "Game")
@@ -139,12 +145,14 @@ public class PlayerController : MonoBehaviour
 
     private void Death()
     {
+        health = 0;
         isLose = true;
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
         rb.velocity = Vector2.zero;
         myWeaponHolder.gameObject.SetActive(false);
         Instantiate(deadParticle, transform.position, Quaternion.identity).GetComponent<ParticleController>().Initialization();
         sprite.SetActive(false);
+        StartCoroutine(LoadLoseScene());
     }
 
     public void GetDamage(float damage)
@@ -162,7 +170,6 @@ public class PlayerController : MonoBehaviour
             {
                 if (myInventory.exploit && Random.Range(0, 100) == 0)
                 {
-                    health = 0;
                     if (!isLose)
                         Death();
                 }
@@ -171,10 +178,14 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                health = 0;
                 if (!isLose)
                     Death();
             }
+        }
+        if (myInventory.exploit && !isLose)
+        {
+            if (Random.Range(0, 25) == 0)
+                Death();
         }
     }
 
@@ -182,6 +193,13 @@ public class PlayerController : MonoBehaviour
     {
         if (fall == null)
             fall = StartCoroutine(Fall());
+    }
+
+    private IEnumerator LoadLoseScene()
+    {
+        yield return new WaitForSeconds(0.5f);
+        instance = null;
+        SceneManager.LoadScene("LoseScene");
     }
 
     private IEnumerator Fall()
@@ -199,10 +217,21 @@ public class PlayerController : MonoBehaviour
         }
         CameraController.instance = null;
         myInventory.level++;
-        if (!myInventory.All())
+        if (myInventory.level < 10)
             SceneManager.LoadScene("Upgrade");
         else
-            SceneManager.LoadScene("Game"); //Потом тут будет босс
+        {
+            if (myInventory.level == 10)
+                SceneManager.LoadScene("Game");
+            else
+                ExitToMenu();
+        }
+    }
+
+    private void ExitToMenu()
+    {
+        instance = null;
+        SceneManager.LoadScene("WinnerScene");
     }
 
     private void OnCollisionStay2D(Collision2D collision)
@@ -227,6 +256,7 @@ public class PlayerController : MonoBehaviour
         {
             case Item.antivirus:
                 myInventory.antivirus = true;
+                shield = 10;
                 health = maxHealh;
                 break;
             case Item.cryptoDurability:
@@ -234,40 +264,33 @@ public class PlayerController : MonoBehaviour
                 myInventory.cryptoDurability = true;
                 break;
             case Item.optialFiber:
-                if (myInventory.publicNet)
-                    addSpeed = 0.25f;
+                addSpeed += 0.25f;
                 myInventory.optialFiber = true;
                 break;
             case Item.https:
-                if (myInventory.damagedHDD)
-                    maxHealh *= 1.5f;
-                else
-                    maxHealh /= 0.5f;
+                maxHealh *= 1.5f;
+                health += maxHealh * 0.5f;
                 myInventory.https = true;
                 break;
             case Item.archive:
-                if (myInventory.cryptoDurability)
-                    shield = 10;
+                health = maxHealh;
                 myInventory.archive = true;
                 break;
 
             case Item.publicNet:
-                if (!myInventory.optialFiber)
-                    addSpeed = -0.25f;
+                addSpeed -= 0.25f;
                 myInventory.publicNet = true;
                 break;
             case Item.exploit:
                 myInventory.exploit = true;
                 break;
             case Item.weakPassword:
-                damageRatio = 0.1f;
+                damageRatio = 0.5f;
                 myInventory.weakPassword = true;
                 break;
             case Item.damagedHDD:
-                if (myInventory.https)
-                    maxHealh *= 0.5f;
-                else
-                    maxHealh /= 1.5f;
+                maxHealh /= 1.5f;
+                health = maxHealh * 0.5f;
                 myInventory.damagedHDD = true;
                 break;
             case Item.oldVersion:

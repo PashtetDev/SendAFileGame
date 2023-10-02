@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject playerObject;
+    [SerializeField]
+    private GameObject boss;
     [SerializeField]
     private GameObject portal;
     [SerializeField]
@@ -23,7 +26,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField]
     private float resizeSpeed, minRadius;
     public static MapGenerator instance;
-    public PlayerController player;
+    private PlayerController player;
     public UIDrawer uiDrawer;
 
     private void Awake()
@@ -36,8 +39,15 @@ public class MapGenerator : MonoBehaviour
 
     private IEnumerator InitializationCorotine()
     {
-        player.Initialization();
-        EnemyFiller();
+        if (PlayerController.instance == null)
+        {
+            player = Instantiate(playerObject, Vector2.zero, Quaternion.identity).GetComponent<PlayerController>();
+            player.Initialization();
+        }
+        if (PlayerController.instance.myInventory.level < 10)
+            EnemyFiller();
+        else
+            BossIn();
         Initialization();
         float duration = 1.5f;
         float percent = 0;
@@ -62,6 +72,16 @@ public class MapGenerator : MonoBehaviour
             Destroy(gameObject);
     }
 
+    private void BossIn()
+    {
+        enemies = new List<GameObject>();
+        GameObject enemyManager = new GameObject("EnemyManager");
+        enemyManager.transform.parent = transform;
+        GameObject newEnemy = Instantiate(boss, RandomPlace(7, Vector3.zero), Quaternion.identity);
+        enemies.Add(newEnemy);
+        newEnemy.transform.parent = enemyManager.transform;
+    }
+
     private void EnemyFiller()
     {
         enemies = new List<GameObject>();
@@ -72,8 +92,8 @@ public class MapGenerator : MonoBehaviour
             enemyTypes = PlayerController.instance.myInventory.level;
         int enemyCount = (int)(5f * Mathf.Log(PlayerController.instance.myInventory.level + 3));
         if (PlayerController.instance.myInventory.oldVersion)
-            enemyCount = (int)(1.25f * enemyCount);
-        for (int i = 0; i < enemyCount; i++)
+            enemyCount = (int)(1.5f * enemyCount) + Random.Range(0, 3);
+        for (int i = 0; i < 1/*enemyCount*/; i++)
         {
             GameObject newEnemy = Instantiate(enemiesInstance[Random.Range(0, enemyTypes)], RandomPlace(5, Vector3.zero), Quaternion.identity);
             enemies.Add(newEnemy);
