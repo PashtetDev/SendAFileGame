@@ -90,12 +90,15 @@ public class MapGenerator : MonoBehaviour
         int enemyTypes = enemiesInstance.Count;
         if (PlayerController.instance.myInventory.level < enemiesInstance.Count)
             enemyTypes = PlayerController.instance.myInventory.level;
-        int enemyCount = (int)(5f * Mathf.Log(PlayerController.instance.myInventory.level + 3));
+        int enemyCount = (int)(3f * Mathf.Log(PlayerController.instance.myInventory.level + 3));
         if (PlayerController.instance.myInventory.oldVersion)
             enemyCount = (int)(1.5f * enemyCount) + Random.Range(0, 3);
-        for (int i = 0; i < 1/*enemyCount*/; i++)
+
+        while (enemies.Count < enemyCount)
         {
-            GameObject newEnemy = Instantiate(enemiesInstance[Random.Range(0, enemyTypes)], RandomPlace(5, Vector3.zero), Quaternion.identity);
+            int enemyNumber = Random.Range(0, enemyTypes); 
+            GameObject newEnemy;
+            newEnemy = Instantiate(enemiesInstance[enemyNumber], RandomPlace(5, Vector3.zero), Quaternion.identity);
             enemies.Add(newEnemy);
             newEnemy.transform.parent = enemyManager.transform;
         }
@@ -182,7 +185,7 @@ public class MapGenerator : MonoBehaviour
     {
         for (int i = 0; i < wallsSubjects.Count; i++)
             wallsSubjects[i].SetActive(false);
-        while (currentRadius > minRadius && !PlayerController.instance.isLose && enemies.Count > 0)
+        while (currentRadius > minRadius)
         {
             for (int i = 0; i < wallsSubjects.Count; i++)
             {

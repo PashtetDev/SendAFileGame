@@ -8,17 +8,16 @@ public class Inventory
 
     //Buffs
     public bool antivirus;
-    public bool cryptoDurability; //щит со своей прочностью
-    public bool optialFiber; //увеличивает скорость бега и стрельбы
-    public bool https; //увеличивает количество жизней
-    public bool archive; //полностью восстанавливает щит
-
+    public bool cryptoDurability;
+    public bool optialFiber;
+    public bool https;
+    public bool archive;
     //Debuffs
-    public bool publicNet; //уменьшает скорость стрельбы и бега (перекрывается оптоволокном)
-    public bool exploit; //шанс мгновенной смерти
-    public bool weakPassword; //увеличивает получаемый урон
-    public bool damagedHDD; //уменьшает общее количество жизней
-    public bool oldVersion; //увеличивает число багов на уровнях
+    public bool publicNet;
+    public bool exploit;
+    public bool weakPassword;
+    public bool damagedHDD;
+    public bool oldVersion;
 
     public void Reset()
     {
@@ -54,11 +53,11 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private GameObject deadParticle;
-    [SerializeField]
     private float health;
-    private float maxHealh;
+    [SerializeField]
+    private float maxHealth;
 
-    private float shield;
+    private float shield, maxShield;
     private float addSpeed;
     private float damageRatio;
     [SerializeField]
@@ -82,9 +81,10 @@ public class PlayerController : MonoBehaviour
     {
         activated = false;
         SetInstance();
+        maxShield = 10;
         myInventory = new Inventory();
         myInventory.Reset();
-        maxHealh = health;
+        health = maxHealth;
         shield = 0;
         addSpeed = 0;
         damageRatio = 0;
@@ -92,6 +92,15 @@ public class PlayerController : MonoBehaviour
         Camera.main.transform.parent.GetComponent<CameraController>().Initialization();
         myWeaponHolder.Initialization();
         rb = GetComponent<Rigidbody2D>();
+        StartCoroutine(UpdateUI());
+    }
+
+    private IEnumerator UpdateUI()
+    {
+        while (UIDrawer.instance == null)
+            yield return null;
+        UIDrawer.instance.UpdateUI(health / maxHealth);
+        UIDrawer.instance.UpdateUIShield(shield / maxShield);
     }
 
     private void OnLevelWasLoaded(int level)
@@ -110,6 +119,7 @@ public class PlayerController : MonoBehaviour
                 if (Camera.main.transform.parent.TryGetComponent(out CameraController cameraController))
                     cameraController.Initialization();
             rb = GetComponent<Rigidbody2D>();
+            StartCoroutine(UpdateUI());
         }
     }
 
@@ -153,39 +163,45 @@ public class PlayerController : MonoBehaviour
         Instantiate(deadParticle, transform.position, Quaternion.identity).GetComponent<ParticleController>().Initialization();
         sprite.SetActive(false);
         StartCoroutine(LoadLoseScene());
+        StartCoroutine(UpdateUI());
     }
 
     public void GetDamage(float damage)
     {
-        if (shield != 0)
+        if (!isLose)
         {
-            if (shield > damage * (1 + damageRatio))
-                shield -= damage * (1 + damageRatio);
-            else
-                shield = 0;
-        }
-        else
-        {
-            if (health > damage * (1 + damageRatio))
+            if (shield != 0)
             {
-                if (myInventory.exploit && Random.Range(0, 100) == 0)
+                if (shield > damage * (1 + damageRatio))
+                    shield -= damage * (1 + damageRatio);
+                else
+                    shield = 0;
+                StartCoroutine(UpdateUI());
+            }
+            else
+            {
+                if (health > damage * (1 + damageRatio))
+                {
+                    if (myInventory.exploit && Random.Range(0, 100) == 0)
+                    {
+                        if (!isLose)
+                            Death();
+                    }
+                    else
+                        health -= damage * (1 + damageRatio);
+                }
+                else
                 {
                     if (!isLose)
                         Death();
                 }
-                else
-                    health -= damage * (1 + damageRatio);
             }
-            else
+            if (myInventory.exploit && !isLose)
             {
-                if (!isLose)
+                if (Random.Range(0, 25) == 0)
                     Death();
             }
-        }
-        if (myInventory.exploit && !isLose)
-        {
-            if (Random.Range(0, 25) == 0)
-                Death();
+            StartCoroutine(UpdateUI());
         }
     }
 
@@ -197,7 +213,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator LoadLoseScene()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
         instance = null;
         SceneManager.LoadScene("LoseScene");
     }
@@ -256,11 +272,11 @@ public class PlayerController : MonoBehaviour
         {
             case Item.antivirus:
                 myInventory.antivirus = true;
-                shield = 10;
-                health = maxHealh;
+                shield = maxShield;
+                health = maxHealth;
                 break;
             case Item.cryptoDurability:
-                shield = 10;
+                shield = maxShield;
                 myInventory.cryptoDurability = true;
                 break;
             case Item.optialFiber:
@@ -268,12 +284,12 @@ public class PlayerController : MonoBehaviour
                 myInventory.optialFiber = true;
                 break;
             case Item.https:
-                maxHealh *= 1.5f;
-                health += maxHealh * 0.5f;
+                health += maxHealth * 0.5f;
+                maxHealth *= 1.5f;
                 myInventory.https = true;
                 break;
             case Item.archive:
-                health = maxHealh;
+                health = maxHealth;
                 myInventory.archive = true;
                 break;
 
@@ -282,6 +298,8 @@ public class PlayerController : MonoBehaviour
                 myInventory.publicNet = true;
                 break;
             case Item.exploit:
+                shield = 0;
+                StartCoroutine(UpdateUI());
                 myInventory.exploit = true;
                 break;
             case Item.weakPassword:
@@ -289,8 +307,8 @@ public class PlayerController : MonoBehaviour
                 myInventory.weakPassword = true;
                 break;
             case Item.damagedHDD:
-                maxHealh /= 1.5f;
-                health = maxHealh * 0.5f;
+                health -= maxHealth * 0.5f;
+                maxHealth /= 1.5f;
                 myInventory.damagedHDD = true;
                 break;
             case Item.oldVersion:

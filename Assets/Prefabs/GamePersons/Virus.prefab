@@ -228,6 +228,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658c09c0701d27246b1a7d559004b4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shotClip: {fileID: 8300000, guid: 7c15885860bacde4f9db1e0b52726273, type: 3}
+  shotSFX: {fileID: 7504521329081101264, guid: f7757ec72f88c974eba332bbc3e6d312, type: 3}
   particle: {fileID: 4390277979585565283}
   reloadTime: 0.5
   spread: 15
@@ -5277,7 +5279,7 @@ MonoBehaviour:
   player: {fileID: 0}
   targetPosition: {x: 0, y: 0}
   sprite: {fileID: 2382241734838055369}
-  damage: 0
+  touchDamage: 0
   reloadTime: 0
   speed: 6
   followingDistance: 7

@@ -4,6 +4,10 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     [SerializeField]
+    private AudioClip shotClip;
+    [SerializeField]
+    private GameObject shotSFX;
+    [SerializeField]
     private ParticleSystem particle;
     [SerializeField]
     private float reloadTime, spread;
@@ -22,6 +26,7 @@ public class Weapon : MonoBehaviour
     {
         if (currentReloadTime == 0)
         {
+            Instantiate(shotSFX, transform.position, Quaternion.identity).GetComponent<SFXController>().Initialization(shotClip);
             if (instance == this)
                 CameraController.instance.ShakeCaller();
             particle.Play();

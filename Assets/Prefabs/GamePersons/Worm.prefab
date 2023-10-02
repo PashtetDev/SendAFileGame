@@ -81,7 +81,7 @@ MonoBehaviour:
   player: {fileID: 0}
   targetPosition: {x: 0, y: 0}
   sprite: {fileID: 8777631015274276219}
-  damage: 1
+  touchDamage: 1
   reloadTime: 2
   speed: 4
   followingDistance: 0

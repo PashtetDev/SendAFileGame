@@ -10,4 +10,8 @@ public class Item : ScriptableObject
     public string description;
     public PlayerController.Item type;
     public bool buff;
+
+    public bool haveImage;
+    public Sprite sprite;
+    public string gameMeaning;
 }

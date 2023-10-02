@@ -26,3 +26,7 @@ MonoBehaviour:
     HDD"
   type: 8
   buff: 0
+  haveImage: 0
+  sprite: {fileID: 0}
+  gameMeaning: "\u0423\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442 \u043C\u0430\u043A\u0441\u0438\u043C\u0430\u043B\u044C\u043D\u043E
+    \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u0435"

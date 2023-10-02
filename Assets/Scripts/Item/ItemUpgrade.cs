@@ -111,6 +111,7 @@ public class ItemUpgrade : MonoBehaviour
 
     private IEnumerator Spawn()
     {
+        yield return new WaitForSeconds(0.5f);
         float speed = 0;
         while (speed < 100)
         {
@@ -143,14 +144,6 @@ public class ItemUpgrade : MonoBehaviour
         {
             yield return null;
             newFactor.transform.position = Vector2.MoveTowards(newFactor.transform.position, startPosition, 100 * Time.deltaTime);
-        }
-        float scale = 1;
-        yield return new WaitForSeconds(0.5f);
-        while (scale < 1.25f)
-        {
-            newFactor.transform.localScale = Vector3.one * scale;
-            scale += 0.5f * Time.deltaTime;
-            yield return null;
         }
 
         if (PlayerController.instance != null)

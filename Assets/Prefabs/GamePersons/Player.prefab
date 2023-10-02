@@ -5169,7 +5169,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   deadParticle: {fileID: 4233541112415622551, guid: d140fc20ab619134dac9462f375e6cf8, type: 3}
-  health: 1
+  maxHealth: 10
   sprite: {fileID: 7795365637754567202}
   myWeaponHolder: {fileID: 3111573787230839338}
   speed: 10
@@ -5273,8 +5273,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658c09c0701d27246b1a7d559004b4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shotClip: {fileID: 8300000, guid: 3083e6a8192c6bd43ba928d6519df55e, type: 3}
+  shotSFX: {fileID: 7504521329081101264, guid: f7757ec72f88c974eba332bbc3e6d312, type: 3}
   particle: {fileID: 7204383186449105593}
-  reloadTime: 0.5
+  reloadTime: 0.4
   spread: 10
   bullet: {fileID: 9085645285311147386, guid: c7369ec6a855a1246952be4f51e4e2fb, type: 3}
   dulo: {fileID: 126324134144698034}

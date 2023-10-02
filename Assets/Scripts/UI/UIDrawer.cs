@@ -6,11 +6,11 @@ using UnityEngine.UI;
 public class UIDrawer : MonoBehaviour
 {
     [SerializeField]
-    private Image health;
+    private Image health, healthBackground;
     [SerializeField]
-    private Image healthBackground;
+    private Image shield, shieldBackground;
     public static UIDrawer instance;
-    private Coroutine lower;
+    private Coroutine lowerHp, lowerSh;
     [SerializeField]
     private Text percents;
     [SerializeField]
@@ -39,7 +39,6 @@ public class UIDrawer : MonoBehaviour
         PlayerController.instance.activated = true;
     }
 
-
     private void SetInstance()
     {
         if (instance == null)
@@ -51,8 +50,17 @@ public class UIDrawer : MonoBehaviour
     public void UpdateUI(float relation)
     {
         health.fillAmount = relation;
-        if (lower == null)
-            lower = StartCoroutine(HealthLower());
+        if (lowerHp == null)
+            lowerHp = StartCoroutine(HealthLower());
+    }
+
+    public void UpdateUIShield(float relation)
+    {
+        if (shield.fillAmount > 0)
+            shield.transform.parent.gameObject.SetActive(true);
+        shield.fillAmount = relation;
+        if (lowerSh == null)
+            lowerSh = StartCoroutine(ShieldLower());
     }
 
     private IEnumerator HealthLower()
@@ -60,11 +68,26 @@ public class UIDrawer : MonoBehaviour
         float speed = 0;
         while (healthBackground.fillAmount > health.fillAmount)
         {
-            speed += Time.deltaTime;
-            healthBackground.fillAmount -= speed;
+            speed += 10 * Time.deltaTime;
+            healthBackground.fillAmount -= speed * Time.deltaTime;
             yield return null;
         }
         healthBackground.fillAmount = health.fillAmount;
-        lower = null;
+        lowerHp = null;
+    }
+
+    private IEnumerator ShieldLower()
+    {
+        float speed = 0;
+        while (shieldBackground.fillAmount > shield.fillAmount)
+        {
+            speed += 10 * Time.deltaTime;
+            shieldBackground.fillAmount -= speed * Time.deltaTime;
+            yield return null;
+        }
+        shieldBackground.fillAmount = shield.fillAmount;
+        lowerSh = null;
+        if (shield.fillAmount == 0)
+            shield.transform.parent.gameObject.SetActive(false);
     }
 }

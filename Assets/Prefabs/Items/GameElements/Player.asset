@@ -21,3 +21,6 @@ MonoBehaviour:
     \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044E"
   type: 0
   buff: 1
+  haveImage: 1
+  sprite: {fileID: -724658604, guid: dfd53ba177f9ffe419f92ca1fca15d09, type: 3}
+  gameMeaning: 

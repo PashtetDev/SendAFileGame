@@ -339,6 +339,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658c09c0701d27246b1a7d559004b4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shotClip: {fileID: 8300000, guid: 7c15885860bacde4f9db1e0b52726273, type: 3}
+  shotSFX: {fileID: 7504521329081101264, guid: f7757ec72f88c974eba332bbc3e6d312, type: 3}
   particle: {fileID: 7797120045454749256}
   reloadTime: 0.1
   spread: 30
