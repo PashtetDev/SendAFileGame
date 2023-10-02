@@ -1,15 +1,20 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Worm : EnemyBasic
 {
+    public SpriteRenderer sprite;
+    [SerializeField]
+    private float damage;
+    public float reloadTime;
+    private Coroutine reload = null;
     public float speed, followingDistance, detectedDistance;
 
     public override void Movement()
     {
         if (PlayerIsVisible() && PlayerController.instance != null
-            && Vector2.Distance(transform.position, player.transform.position) < detectedDistance)
+            && Vector2.Distance(transform.position, player.transform.position) < detectedDistance
+            && !PlayerController.instance.isLose)
             WalkToPlayer();
         else
             FreeWalk();
@@ -20,8 +25,13 @@ public class Worm : EnemyBasic
         FreeWeaponRotate();
         Debug.DrawRay(transform.position, (Vector3)targetPosition - transform.position, Color.yellow);
         if (Vector2.Distance(transform.position, targetPosition) < 1)
-            targetPosition = RandomPlace(followingDistance);
+            targetPosition = MapGenerator.instance.RandomPlace(followingDistance, transform.position);
         rb.velocity = ((Vector3)targetPosition - transform.position).normalized * speed;
+
+        if (targetPosition.x > transform.position.x)
+            sprite.flipX = true;
+        if (targetPosition.x < transform.position.x)
+            sprite.flipX = false;
     }
 
     public void WalkToPlayer()
@@ -31,6 +41,11 @@ public class Worm : EnemyBasic
             rb.velocity = (player.transform.position - transform.position).normalized * speed;
         else
             rb.velocity = Vector2.zero;
+
+        if (player.transform.position.x > transform.position.x)
+            sprite.flipX = true;
+        if (player.transform.position.x < transform.position.x)
+            sprite.flipX = false;
     }
 
     public override void WeaponRotateToPlayer() { }
@@ -39,9 +54,20 @@ public class Worm : EnemyBasic
 
     public override void FreeWeaponRotate() { }
 
+    public IEnumerator Reload()
+    {
+        yield return new WaitForSeconds(reloadTime);
+        reload = null;
+    }
+
     private void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.transform.CompareTag("Wall") || collision.transform.CompareTag("Enemy"))
-            targetPosition = RandomPlace(followingDistance);
+            targetPosition = MapGenerator.instance.RandomPlace(followingDistance, transform.position);
+        if (collision.transform.CompareTag("Player") && reload == null)
+        {
+            collision.transform.GetComponent<PlayerController>().GetDamage(damage);
+            reload = StartCoroutine(Reload());
+        }
     }
 }

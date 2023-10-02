@@ -45,10 +45,15 @@ public class Bug : EnemyBasic
 
     private void BugJump()
     {
-        if (currentZone != null)
-            currentZone.GetComponent<ElectricZone>().Initialization();
-        jumpTime = Random.Range(7f, 10f);
-        transform.position = RandomPlace(detectedDistance);
+        jumpTime = Random.Range(1f, 3f);
+        transform.position = MapGenerator.instance.RandomPlace(Random.Range(1f, 4f), transform.position);
         currentZone = Instantiate(electricZone, transform.position, Quaternion.identity);
+        currentZone.GetComponent<ElectricZone>().Initialization();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.transform.CompareTag("Wall"))
+            BugJump();
     }
 }

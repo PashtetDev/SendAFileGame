@@ -24,6 +24,7 @@ public class ElectricZone : MonoBehaviour
             lifeDuration -= Time.deltaTime;
             yield return null;
         }
+        StopAllCoroutines();
         Destroy(gameObject);
     }
 
@@ -35,7 +36,6 @@ public class ElectricZone : MonoBehaviour
             yield return new WaitForSeconds(reloadTime);
             if (playerInZone)
             {
-                Debug.Log("Bzzzz");
                 player.GetComponent<PlayerController>().GetDamage(damage);
             }
         }
@@ -43,7 +43,7 @@ public class ElectricZone : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player") && !playerInZone)
+        if (collision.CompareTag("Player") && currentCorotine == null)
         {
             currentCorotine = StartCoroutine(Visitor(collision.gameObject));
         }

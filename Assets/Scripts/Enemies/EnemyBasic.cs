@@ -3,7 +3,9 @@ using UnityEngine;
 
 public abstract class EnemyBasic : MonoBehaviour
 {
-    public int health;
+    [SerializeField]
+    private GameObject deadParticles;
+    public float health;
     [HideInInspector]
     public Rigidbody2D rb;
     [HideInInspector]
@@ -13,7 +15,14 @@ public abstract class EnemyBasic : MonoBehaviour
 
     public void Initialization()
     {
+        StartCoroutine(SpawnInitialization());
+    }
+
+    private IEnumerator SpawnInitialization()
+    {
         rb = GetComponent<Rigidbody2D>();
+        while (PlayerController.instance == null)
+            yield return null;
         player = PlayerController.instance.gameObject;
         WeaponInit();
     }
@@ -22,7 +31,8 @@ public abstract class EnemyBasic : MonoBehaviour
 
     private void Update()
     {
-        Movement();
+        if (player != null)
+            Movement();
     }
 
     public abstract void WeaponRotateToPlayer();
@@ -45,20 +55,7 @@ public abstract class EnemyBasic : MonoBehaviour
         return false;
     }
 
-    public Vector2 RandomPlace(float minimalDistance)
-    {
-        float radius = MapGenerator.instance.currentRadius;
-        float distance;
-        Vector2 position;
-        do
-        {
-            position = new Vector2(Random.Range(-radius, radius), Random.Range(-radius, radius));
-            distance = Vector2.Distance(transform.position, position);
-        } while (distance < minimalDistance);
-        return position;
-    }
-
-    public void GetDamage(int damage)
+    public void GetDamage(float damage)
     {
         if (health > damage)
             health -= damage;
@@ -68,6 +65,7 @@ public abstract class EnemyBasic : MonoBehaviour
 
     private void Death()
     {
-        Destroy(gameObject);
+        Instantiate(deadParticles, transform.position, Quaternion.identity).GetComponent<ParticleController>().Initialization();
+        MapGenerator.instance.DestroyEnemy(gameObject);
     }
 }

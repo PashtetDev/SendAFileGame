@@ -1,10 +1,13 @@
 using System.Collections;
 using UnityEngine;
+using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 public class Bullet : MonoBehaviour
 {
     [SerializeField]
-    private int damage;
+    private GameObject particle;
+    [SerializeField]
+    private float damage;
     [SerializeField]
     private float lifeTime, speed;
     private Rigidbody2D rb;
@@ -27,23 +30,42 @@ public class Bullet : MonoBehaviour
         Destroy(gameObject);
     }
 
+    private void OnDestroy()
+    {
+        Instantiate(particle, transform.position, transform.rotation).GetComponent<ParticleController>().Initialization();
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        switch (collision.tag)
+        if (CompareTag("Bullet"))
         {
-            case "Player":
-                collision.GetComponent<PlayerController>().GetDamage(damage);
-                Destroy(gameObject);
-                break;
-            case "Wall":
-                Destroy(gameObject);
-                break;
-            case "Enemy":
-                collision.GetComponent<EnemyBasic>().GetDamage(damage);
-                Destroy(gameObject);
-                break;
-            default:
-                break;
+            switch (collision.tag)
+            {
+                case "Wall":
+                    Destroy(gameObject);
+                    break;
+                case "Enemy":
+                    collision.GetComponent<EnemyBasic>().GetDamage(damage);
+                    Destroy(gameObject);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            switch (collision.tag)
+            {
+                case "Player":
+                    collision.GetComponent<PlayerController>().GetDamage(damage);
+                    Destroy(gameObject);
+                    break;
+                case "Wall":
+                    Destroy(gameObject);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

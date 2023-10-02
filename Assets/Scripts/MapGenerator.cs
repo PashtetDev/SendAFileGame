@@ -1,11 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
 {
     [SerializeField]
+    private GameObject portal;
+    [SerializeField]
+    private List<GameObject> enemiesInstance;
+    private List<GameObject> enemies;
+
+    [SerializeField]
     private int radius;
+    [HideInInspector]
     public float currentRadius;
     private List<Vector2Int> walls;
     private List<GameObject> wallsSubjects;
@@ -14,18 +22,36 @@ public class MapGenerator : MonoBehaviour
     private GameObject wallManager;
     [SerializeField]
     private float resizeSpeed, minRadius;
-    [SerializeField]
-    private List<EnemyBasic> enemies;
     public static MapGenerator instance;
     public PlayerController player;
+    public UIDrawer uiDrawer;
 
     private void Awake()
     {
         SetInstance();
+        uiDrawer.Initialization();
+        currentRadius = radius - 1;
+        StartCoroutine(InitializationCorotine());
+    }
+
+    private IEnumerator InitializationCorotine()
+    {
         player.Initialization();
+        EnemyFiller();
         Initialization();
+        float duration = 1.5f;
+        float percent = 0;
+        while (duration > 0)
+        {
+            duration -= Time.deltaTime;
+            yield return null;
+            percent += Random.Range(25f, 75f) * Time.deltaTime;
+            uiDrawer.Load(percent);
+        }
+        if (percent < 100)
+            uiDrawer.Load(100);
+        yield return new WaitForSeconds(0.5f);
         EnemyInitializator();
-        gameObject.SetActive(false);
     }
 
     private void SetInstance()
@@ -34,6 +60,45 @@ public class MapGenerator : MonoBehaviour
             instance = this;
         else
             Destroy(gameObject);
+    }
+
+    private void EnemyFiller()
+    {
+        enemies = new List<GameObject>();
+        GameObject enemyManager = new GameObject("EnemyManager");
+        enemyManager.transform.parent = transform;
+        int enemyTypes = enemiesInstance.Count;
+        if (PlayerController.instance.myInventory.level < enemiesInstance.Count)
+            enemyTypes = PlayerController.instance.myInventory.level;
+        int enemyCount = (int)(5f * Mathf.Log(PlayerController.instance.myInventory.level + 3));
+        if (PlayerController.instance.myInventory.oldVersion)
+            enemyCount = (int)(1.25f * enemyCount);
+        for (int i = 0; i < enemyCount; i++)
+        {
+            GameObject newEnemy = Instantiate(enemiesInstance[Random.Range(0, enemyTypes)], RandomPlace(5, Vector3.zero), Quaternion.identity);
+            enemies.Add(newEnemy);
+            newEnemy.transform.parent = enemyManager.transform;
+        }
+    }
+
+    private void EnemyInitializator()
+    {
+        for (int i = 0; i < enemies.Count; i++)
+            if (enemies[i] != null)
+                enemies[i].GetComponent<EnemyBasic>().Initialization();
+    }
+
+    public Vector2 RandomPlace(float minimalDistance, Vector3 origin)
+    {
+        float radius = instance.currentRadius - 2;
+        float distance;
+        Vector2 position;
+        do
+        {
+            position = new Vector2(Random.Range(-radius, radius), Random.Range(-radius, radius)).normalized * radius;
+            distance = Vector2.Distance(origin, position);
+        } while (distance < minimalDistance);
+        return position;
     }
 
     public void Initialization()
@@ -47,6 +112,11 @@ public class MapGenerator : MonoBehaviour
         StartCoroutine(ResizeMapZone());
 
         gameObject.name = "Map";
+    }
+
+    public void AddEnemy(GameObject newEnemy)
+    {
+        enemies.Add(newEnemy);
     }
 
     private void RoomCreator()
@@ -72,30 +142,38 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    private void EnemyInitializator()
+    public void DestroyEnemy(GameObject enemy)
     {
-        for (int i = 0; i < enemies.Count; i++)
-            if (enemies[i] != null)
-                enemies[i].Initialization();
+        Destroy(enemy);
+        enemies.Remove(enemy);
+        if (enemies.Count == 0)
+        {
+            StartCoroutine(PortalSpawn());
+        }
+    }
+
+    private IEnumerator PortalSpawn()
+    {
+        yield return new WaitForSeconds(1);
+        Instantiate(portal, Vector3.zero, Quaternion.identity);
     }
 
     private IEnumerator ResizeMapZone()
     {
-        currentRadius = radius - 1;
         for (int i = 0; i < wallsSubjects.Count; i++)
             wallsSubjects[i].SetActive(false);
-        while (currentRadius > minRadius)
+        while (currentRadius > minRadius && !PlayerController.instance.isLose && enemies.Count > 0)
         {
             for (int i = 0; i < wallsSubjects.Count; i++)
             {
                 if (Vector2.Distance((Vector2)wallsSubjects[i].transform.position, Vector2.zero) >= currentRadius)
                     wallsSubjects[i].SetActive(true);
                 if (Vector2.Distance((Vector2)wallsSubjects[i].transform.position, Vector2.zero) > currentRadius + 1)
-                    wallsSubjects[i].SetActive(false);
+                    wallsSubjects[i].transform.GetChild(0).gameObject.SetActive(false);
             }
             if (currentRadius == radius - 1)
                 yield return new WaitForSeconds(2);
-            currentRadius -= (1 / (resizeSpeed + 1)) * Time.deltaTime;
+            currentRadius -= resizeSpeed * Time.deltaTime;
             yield return null;
         }
     }

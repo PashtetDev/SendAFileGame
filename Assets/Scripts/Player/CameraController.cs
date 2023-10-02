@@ -21,12 +21,7 @@ public class CameraController : MonoBehaviour
     private void SetInstance()
     {
         if (instance == null)
-        {
             instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-            Destroy(gameObject);
     }
 
     private void Update()

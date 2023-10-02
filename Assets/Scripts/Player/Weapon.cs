@@ -4,6 +4,8 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     [SerializeField]
+    private ParticleSystem particle;
+    [SerializeField]
     private float reloadTime, spread;
     private float currentReloadTime;
     [SerializeField]
@@ -22,15 +24,23 @@ public class Weapon : MonoBehaviour
         {
             if (instance == this)
                 CameraController.instance.ShakeCaller();
+            particle.Play();
             GameObject newBullet = Instantiate(bullet, dulo.transform.position, Quaternion.identity);
             newBullet.GetComponent<Bullet>().Initialization(direction + new Vector3(0, 0, Random.Range(-spread / 2, spread / 2)));
-            StartCoroutine(Reload()); 
+            StartCoroutine(Reload());
         }
     }
 
     private IEnumerator Reload()
     {
-        currentReloadTime = reloadTime;
+        if (instance == this)
+        {
+            currentReloadTime = reloadTime;
+            if (PlayerController.instance.myInventory.optialFiber)
+                currentReloadTime = reloadTime / 2;
+        }
+        else
+            currentReloadTime = reloadTime * Random.Range(1f, 3f);
         while (currentReloadTime > 0)
         {
             currentReloadTime -= Time.deltaTime;
