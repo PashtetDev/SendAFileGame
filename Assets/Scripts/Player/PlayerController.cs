@@ -233,14 +233,14 @@ public class PlayerController : MonoBehaviour
         }
         CameraController.instance = null;
         myInventory.level++;
-        if (myInventory.level < 10)
+        if (myInventory.level <= 10)
             SceneManager.LoadScene("Upgrade");
         else
         {
-            if (myInventory.level == 10)
-                SceneManager.LoadScene("Game");
-            else
+            if (myInventory.level >= 12)
                 ExitToMenu();
+            else
+                SceneManager.LoadScene("Game");
         }
     }
 

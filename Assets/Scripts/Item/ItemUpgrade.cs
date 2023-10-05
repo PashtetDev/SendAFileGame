@@ -91,8 +91,13 @@ public class ItemUpgrade : MonoBehaviour
         if (count < (int)Mathf.Abs((lenta.transform.position.y - startPosition.y) / 300) && initialized)
         {
             count++;
+            GameObject canvas;
             GameObject newItem = Instantiate(textArea, transform.position, Quaternion.identity);
+            canvas = newItem;
+            newItem = newItem.transform.GetChild(0).gameObject;
+            newItem.transform.position = transform.position;
             newItem.transform.parent = lenta.transform;
+            Destroy(canvas);
             factors.Add(newItem);
             Item item = items[Random.Range(0, items.Count)];
             newItem.GetComponent<ItemHolder>().myItem = item;

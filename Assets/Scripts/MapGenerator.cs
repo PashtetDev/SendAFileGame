@@ -44,7 +44,7 @@ public class MapGenerator : MonoBehaviour
             player = Instantiate(playerObject, Vector2.zero, Quaternion.identity).GetComponent<PlayerController>();
             player.Initialization();
         }
-        if (PlayerController.instance.myInventory.level < 10)
+        if (PlayerController.instance.myInventory.level < 11)
             EnemyFiller();
         else
             BossIn();
